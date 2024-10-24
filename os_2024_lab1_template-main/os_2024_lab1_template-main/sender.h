@@ -12,6 +12,7 @@
 #include <semaphore.h>
 #include <time.h>
 #include <mqueue.h>
+#include <sys/mman.h>
 
 typedef struct {
     int flag;      // 1 for message passing, 2 for shared memory

@@ -2,7 +2,7 @@
 
 #define QUEUE_NAME "/posix_queue"
 #define SHM_NAME "/shm_comm"
-#define MSG_STOP ""
+#define MSG_STOP "End"
 
 void receive(message_t* message_ptr, mailbox_t* mailbox_ptr){
     /*  TODO: 
@@ -10,13 +10,13 @@ void receive(message_t* message_ptr, mailbox_t* mailbox_ptr){
         2. According to the communication method, receive the message
     */
     if(mailbox_ptr -> flag == 1){
-        //msgsnd： 將 message 發送到mailbox_ptr -> storage.msqid 的佇列中
-        //不計mtype大小，僅從data[]開始計算，，所以減去sizeof(long)
-        if(mq_receive(mailbox_ptr -> storage.mqdes, message_ptr -> data, 1024, NULL) == -1){ //1024: attr.mq_msgsize = 1024, NULL: 忽略優先級
+        ssize_t received_bytes = mq_receive(mailbox_ptr -> storage.mqdes, message_ptr -> data, 1024, NULL);
+        if(received_bytes == -1){ //1024: attr.mq_msgsize = 1024, NULL: 忽略優先級
             perror("mq_send failed");
             exit(1);
         }
-        message_ptr -> size = strlen(message_ptr -> data);
+        message_ptr -> size = received_bytes;
+        message_ptr -> data[message_ptr -> size] = '\0';
     }
     else if(mailbox_ptr -> flag == 2){
         memcpy(message_ptr, mailbox_ptr -> storage.shm_addr, sizeof(message_t)); //將共享記憶體區的內容複製到message
@@ -45,6 +45,14 @@ int main(int argc, char* argv[]){
     mailbox_t mailbox;
     mailbox.flag = mechanism;
 
+    sem_t *send_sem = sem_open("/send_sem", O_CREAT, 0644, 0); //initial = 0 //transfer this
+    sem_t *rec_sem = sem_open("/rec_sem", O_CREAT, 0644, 0); //initial = 0 //wait this
+    
+    if(send_sem == SEM_FAILED || rec_sem == SEM_FAILED){
+        perror("sem_open failed");
+        exit(1);
+    }
+    
     if(mechanism == 1){
         struct mq_attr attr;
         attr.mq_flags = 0;
@@ -67,10 +75,13 @@ int main(int argc, char* argv[]){
             perror("shm_open failed");
             exit(1);
         }
-
-        ftruncate(shm_fd, sizeof(message_t)); //設定共享記憶體大小
-        mailbox.storage.shm_addr = mmap(0, sizeof(message_t), PROT_READ | PROT_WRITE, PROT_SHARED, shm_fd, 0); //mmap: 映射共享記憶體區到程式的虛擬地址中
-        if(mailbox.storage.shm_addr  == MAP_FAILED){
+        if(ftruncate(shm_fd, sizeof(message_t)) == -1){//設定共享記憶體大小
+            perror("ftruncate failed");
+            exit(1);
+        } 
+        
+        mailbox.storage.shm_addr = mmap(0, sizeof(message_t), PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0); //mmap: 映射共享記憶體區到程式的虛擬地址中
+        if(mailbox.storage.shm_addr == MAP_FAILED){
             perror("mmap failed");
             exit(1);
         }
@@ -82,16 +93,18 @@ int main(int argc, char* argv[]){
     double time_taken = 0.0;
 
     while(1){
+        sem_wait(rec_sem);
         clock_gettime(CLOCK_MONOTONIC, &start);
         receive(&message, &mailbox);
         clock_gettime(CLOCK_MONOTONIC, &end);
-
+        
         if(strcmp(message.data, MSG_STOP) == 0){
             break;
         }
 
-        printf("\e[1;36mReceiving message: \e[m %s\n", message.data); 
+        printf("\e[1;36mReceiving message: \e[m %s", message.data); 
         time_taken += (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) * 1e-9;
+        sem_post(send_sem);
     }
 
     if(mechanism == 1){
@@ -102,6 +115,12 @@ int main(int argc, char* argv[]){
         munmap(mailbox.storage.shm_addr, sizeof(message_t));
         shm_unlink(SHM_NAME);
     }
-    printf("\e[1;31mSender exit!\e[m\n");
+    printf("\e[1;31\nmSender exit!\e[m\n");
     printf("Total time taken in receiving msg: %f s\n", time_taken);
+    memset(&message, 0, sizeof(message_t));
+    sem_close(send_sem);
+    sem_close(rec_sem);
+    sem_unlink("/send_sem");
+    sem_unlink("/rec_sem");
+    return 0;
 }
