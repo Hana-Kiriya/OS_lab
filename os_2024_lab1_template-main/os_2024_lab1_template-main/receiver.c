@@ -113,7 +113,6 @@ int main(int argc, char* argv[]){
     }
     else if(mechanism == 2){
         munmap(mailbox.storage.shm_addr, sizeof(message_t));
-        shm_unlink(SHM_NAME);
     }
     printf("\e[1;31\nmSender exit!\e[m\n");
     printf("Total time taken in receiving msg: %f s\n", time_taken);
