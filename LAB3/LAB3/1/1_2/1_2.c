@@ -17,8 +17,8 @@ void spin_lock() {
         "loop:\n\t"
         "mov $0, %%eax\n\t"
         /*YOUR CODE HERE*/
-        "xchg %[lock], %%eax\n\t" //交換[locj]和%eax的值
-        "test %%eax, %%eax\n\t"
+        "xchg %[lock], %%eax\n\t" //交換[lock]和%eax的值
+        "cmp $1, %[lock]\n\t" //if((%eax - 1) < 0) sz = 1 => js運作，跳轉至loop; else sz = 0, js不跳轉
         /****************/
         "js loop\n\t"
         :
