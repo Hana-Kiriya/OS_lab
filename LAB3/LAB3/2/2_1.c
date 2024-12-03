@@ -46,12 +46,12 @@ void data_processing(void){
 
 void *thread(void *arg){
     int res;
-    for(int i=0; i<matrix_row_x; i++){
-        for(int j=0; j<matrix_col_y; j++){
+    for(int i=0; i<matrix_row_x; i++){ //nx
+        for(int j=0; j<matrix_col_y; j++){ //my
             res = 0;
-            for(int k=0; k<matrix_row_y; k++){
+            for(int k=0; k<matrix_row_y; k++){ //mx, ny
                 /*YOUR CODE HERE*/
-
+                res += x[i][k] * y[k][j];
                 /****************/
             }
             fprintf(fptr3, "%d ", res);
