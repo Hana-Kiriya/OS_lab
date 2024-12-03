@@ -10,14 +10,15 @@
 
 volatile int a = 0;
 volatile int lock = UNLOCK;
-pthread_mutex_t mutex;
+//pthread_mutex_t mutex;
 
 void spin_lock() {
     asm volatile(
         "loop:\n\t"
         "mov $0, %%eax\n\t"
         /*YOUR CODE HERE*/
-
+        "xchg %[lock], %%eax\n\t" //交換[locj]和%eax的值
+        "test %%eax, %%eax\n\t"
         /****************/
         "js loop\n\t"
         :
@@ -30,7 +31,7 @@ void spin_unlock() {
     asm volatile(
         "mov $1, %%eax\n\t"
         /*YOUR CODE HERE*/
-
+        "xchg %[lock], %%eax\n\t"
         /****************/
         :
         : [lock] "m" (lock)
@@ -55,12 +56,12 @@ int main() {
     fptr = fopen("1.txt", "a");
     pthread_t t1, t2;
 
-    pthread_mutex_init(&mutex, 0);
+    //pthread_mutex_init(&mutex, 0);
     pthread_create(&t1, NULL, thread, NULL);
     pthread_create(&t2, NULL, thread, NULL);
     pthread_join(t1, NULL);
     pthread_join(t2, NULL);
-    pthread_mutex_destroy(&mutex);
+    //pthread_mutex_destroy(&mutex);
 
     fprintf(fptr, "%d ", a);
     fclose(fptr);

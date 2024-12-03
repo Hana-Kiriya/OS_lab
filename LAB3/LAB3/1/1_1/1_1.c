@@ -7,9 +7,13 @@ pthread_spinlock_t lock;
 
 void *thread(void *arg) {
     /*YOUR CODE HERE*/
-    pthread_spin_lock(lock);
-    for(int i=0; i<10000; i++) a = a + 1;  
-    pthread_spin_unlock(lock);
+    
+    for(int i=0; i<10000; i++){
+        pthread_spin_lock(&lock);
+        a = a + 1; 
+        pthread_spin_unlock(&lock);
+    }  
+    
     /****************/              
     return NULL;
 }
