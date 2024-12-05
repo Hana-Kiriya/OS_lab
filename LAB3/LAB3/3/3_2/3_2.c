@@ -82,13 +82,15 @@ void *thread1(void *arg){
 
     fputs(data, file);
     fclose(file);
-    pthread_spin_unlock(&lock);
+    
     /****************/ 
 
     char buffer[50]; 
     while (fgets(buffer, sizeof(buffer), fptr4) != NULL){
         printf("%s", buffer);
     }
+
+    pthread_spin_unlock(&lock);
 }
 
 
@@ -115,13 +117,15 @@ void *thread2(void *arg){
 
     fputs(data, file);
     fclose(file);
-    pthread_spin_unlock(&lock);
+    
     /****************/   
 
     char buffer[50]; 
     while (fgets(buffer, sizeof(buffer), fptr5) != NULL){
         printf("%s", buffer);
     } 
+
+    pthread_spin_unlock(&lock);
 }
 #endif
 
