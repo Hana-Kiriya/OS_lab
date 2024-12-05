@@ -29,12 +29,11 @@ static ssize_t Mywrite(struct file *fileptr, const char __user *ubuf, size_t buf
         return -EFAULT;
     }
 
-    len = sprintf(buf + buffer_len, "PID: %d, TID: %d, time: %lld\n", current -> tgid, current -> pid, current -> utime/100/1000);
+    len += sprintf(buf + len, "PID: %d, TID: %d, time: %lld\n", current -> tgid, current -> pid, current -> utime/100/1000);
     buf[len] = '\0';
 
     *offset += len;
-    *offset += buffer_len;
-    buffer_len += len;
+    
     pr_info("Kernel received: %s\n", buf);
 
     return len;
@@ -45,11 +44,6 @@ static ssize_t Mywrite(struct file *fileptr, const char __user *ubuf, size_t buf
 static ssize_t Myread(struct file *fileptr, char __user *ubuf, size_t buffer_len, loff_t *offset) {
     if (*offset > 0) { // If offset is non-zero, that means it's already read
         return 0;
-    }
-
-    // Ensure buffer length doesn't exceed the provided size
-    if (len > buffer_len) {
-        len = buffer_len;
     }
 
     int ret = copy_to_user(ubuf, buf, buffer_len);
