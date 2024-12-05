@@ -12,7 +12,7 @@
 
 #define matrix_row_y 250
 #define matrix_col_y 1234
-
+pthread_spinlock_t lock;
 FILE *fptr1;
 FILE *fptr2;
 FILE *fptr3;
@@ -73,17 +73,16 @@ void *thread1(void *arg){
 
     /*YOUR CODE HERE*/
     /* Hint: Write data into proc file.*/
-    pthread_mutex_t file_mutex = PTHREAD_MUTEX_INITIALIZER;
-    pthread_mutex_lock(&file_mutex);
-    FILE *file = fopen("/proc/Mythread_info", "a");
-    if (file == NULL) {
+    pthread_spin_lock(&lock);
+    FILE *file = fopen("/proc/Mythread_info", "w"); //追加模式 -> a，若用w會變成覆蓋後寫入
+    if(!file){
         perror("Failed to open /proc/Mythread_info");
-        pthread_mutex_unlock(&file_mutex);
         pthread_exit(NULL);
     }
+
     fputs(data, file);
     fclose(file);
-    pthread_mutex_unlock(&file_mutex);
+    pthread_spin_unlock(&lock);
     /****************/ 
 
     char buffer[50]; 
@@ -107,17 +106,16 @@ void *thread2(void *arg){
     
     /*YOUR CODE HERE*/
     /* Hint: Write data into proc file.*/
-    pthread_mutex_t file_mutex = PTHREAD_MUTEX_INITIALIZER;
-    pthread_mutex_lock(&file_mutex);
-    FILE *file = fopen("/proc/Mythread_info", "a");
-    if (file == NULL) {
+    pthread_spin_lock(&lock);
+    FILE *file = fopen("/proc/Mythread_info", "w");
+    if(!file){
         perror("Failed to open /proc/Mythread_info");
-        pthread_mutex_unlock(&file_mutex);
         pthread_exit(NULL);
     }
+
     fputs(data, file);
     fclose(file);
-    pthread_mutex_unlock(&file_mutex);
+    pthread_spin_unlock(&lock);
     /****************/   
 
     char buffer[50]; 
