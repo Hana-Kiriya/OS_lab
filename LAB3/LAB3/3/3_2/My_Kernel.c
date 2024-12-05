@@ -9,23 +9,19 @@
 #define procfs_name "Mythread_info"
 #define BUFSIZE  1024
 char buf[BUFSIZE]; //kernel buffer
-static unsigned long p_len = 0;
-static unsigned long last_read_pos = -1;
-enum { 
-    CDEV_NOT_USED, 
-    CDEV_EXCLUSIVE_OPEN, 
-}; 
-static atomic_t already_open = ATOMIC_INIT(CDEV_NOT_USED);
 
 static ssize_t Mywrite(struct file *fileptr, const char __user *ubuf, size_t buffer_len, loff_t *offset){
     /*Your code here*/
-    
+    ssize_t len;
+    if (*offset > 0) { // If offset is non-zero, that means it's already read
+        return 0;
+    }
 
     if(buffer_len > BUFSIZE){
         return -ENOSPC;
     }
-    if(buffer_len > BUFSIZE - 1) p_len = BUFSIZE - 1;
-    else p_len = buffer_len;
+    if(buffer_len > BUFSIZE - 1) len = BUFSIZE - 1;
+    else len = buffer_len;
 
     int ret = copy_from_user(buf, ubuf, buffer_len);
     if(ret != 0){
@@ -33,20 +29,20 @@ static ssize_t Mywrite(struct file *fileptr, const char __user *ubuf, size_t buf
         return -EFAULT;
     }
 
-    p_len += sprintf(buf + p_len, "PID: %d, TID: %d, time: %lld\n", current -> tgid, current -> pid, current -> utime/100/1000);
-    buf[p_len] = '\0';
+    len = sprintf(buf + buffer_len, "PID: %d, TID: %d, time: %lld\n", current -> tgid, current -> pid, current -> utime/100/1000);
+    buf[len] = '\0';
 
-    *offset += p_len;
-
+    *offset += len;
+    *offset += buffer_len;
+    buffer_len += len;
     pr_info("Kernel received: %s\n", buf);
 
-    return p_len;
+    return len;
     /****************/
 }
 
 
 static ssize_t Myread(struct file *fileptr, char __user *ubuf, size_t buffer_len, loff_t *offset) {
-    ssize_t len = p_len; // Calculate buffer length
     if (*offset > 0) { // If offset is non-zero, that means it's already read
         return 0;
     }
@@ -56,14 +52,14 @@ static ssize_t Myread(struct file *fileptr, char __user *ubuf, size_t buffer_len
         len = buffer_len;
     }
 
-    int ret = copy_to_user(ubuf, buf, len);
+    int ret = copy_to_user(ubuf, buf, buffer_len);
     if (ret != 0) {
         pr_err("Failed to copy data to user space.\n");
         return -EFAULT;
     }
 
-    *offset += len;
-    return len;
+    *offset += buffer_len;
+    return buffer_len;
 }
 
 
