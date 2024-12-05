@@ -73,14 +73,17 @@ void *thread1(void *arg){
 
     /*YOUR CODE HERE*/
     /* Hint: Write data into proc file.*/
-    FILE *file = fopen("/proc/Mythread_info", "a"); //追加模式 -> a，若用w會變成覆蓋後寫入
-    if(!file){
+    pthread_mutex_t file_mutex = PTHREAD_MUTEX_INITIALIZER;
+    pthread_mutex_lock(&file_mutex);
+    FILE *file = fopen("/proc/Mythread_info", "a");
+    if (file == NULL) {
         perror("Failed to open /proc/Mythread_info");
+        pthread_mutex_unlock(&file_mutex);
         pthread_exit(NULL);
     }
-
     fputs(data, file);
     fclose(file);
+    pthread_mutex_unlock(&file_mutex);
     /****************/ 
 
     char buffer[50]; 
@@ -104,14 +107,17 @@ void *thread2(void *arg){
     
     /*YOUR CODE HERE*/
     /* Hint: Write data into proc file.*/
+    pthread_mutex_t file_mutex = PTHREAD_MUTEX_INITIALIZER;
+    pthread_mutex_lock(&file_mutex);
     FILE *file = fopen("/proc/Mythread_info", "a");
-    if(!file){
+    if (file == NULL) {
         perror("Failed to open /proc/Mythread_info");
+        pthread_mutex_unlock(&file_mutex);
         pthread_exit(NULL);
     }
-
     fputs(data, file);
     fclose(file);
+    pthread_mutex_unlock(&file_mutex);
     /****************/   
 
     char buffer[50]; 
