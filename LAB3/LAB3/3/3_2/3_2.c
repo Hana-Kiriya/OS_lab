@@ -73,7 +73,14 @@ void *thread1(void *arg){
 
     /*YOUR CODE HERE*/
     /* Hint: Write data into proc file.*/
+    FILE *file = fopen("/proc/Mythread_info", "a"); //追加模式 -> a，若用w會變成覆蓋後寫入
+    if(!file){
+        perror("Failed to open /proc/Mythread_info");
+        pthread_exit(NULL);
+    }
 
+    fputs(data, file);
+    fclose(file);
     /****************/ 
 
     char buffer[50]; 
@@ -97,7 +104,14 @@ void *thread2(void *arg){
     
     /*YOUR CODE HERE*/
     /* Hint: Write data into proc file.*/
+    FILE *file = fopen("/proc/Mythread_info", "a");
+    if(!file){
+        perror("Failed to open /proc/Mythread_info");
+        pthread_exit(NULL);
+    }
 
+    fputs(data, file);
+    fclose(file);
     /****************/   
 
     char buffer[50]; 
