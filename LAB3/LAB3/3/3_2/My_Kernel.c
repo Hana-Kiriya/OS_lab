@@ -10,6 +10,12 @@
 #define BUFSIZE  1024
 char buf[BUFSIZE]; //kernel buffer
 static unsigned long p_len = 0;
+static unsigned long last_read_pos = -1;
+enum { 
+    CDEV_NOT_USED, 
+    CDEV_EXCLUSIVE_OPEN, 
+}; 
+static atomic_t already_open = ATOMIC_INIT(CDEV_NOT_USED);
 
 static ssize_t Mywrite(struct file *fileptr, const char __user *ubuf, size_t buffer_len, loff_t *offset){
     /*Your code here*/
