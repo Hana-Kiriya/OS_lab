@@ -79,7 +79,7 @@ void *thread1(void *arg){
         pthread_exit(NULL);
     }
 
-    fprintf(file, "Hello World from 1\n");
+    fprintf(file, "Thread 1 says hello!\n");
     fclose(file);
     
     /****************/ 
@@ -111,7 +111,7 @@ void *thread2(void *arg){
         pthread_exit(NULL);
     }
 
-    fprintf(file, "Hello World from 2\n");
+    fprintf(file, "Thread 2 says hello!\n");
     fclose(file);
     
     /****************/   
