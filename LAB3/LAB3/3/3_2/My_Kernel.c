@@ -79,11 +79,11 @@ static ssize_t Myread(struct file *fileptr, char __user *ubuf, size_t buffer_len
 
         // First line + "Thread 1 says hello"
         len += snprintf(buf + len, BUFSIZE - len, "%s\n", first_line);
-        len += snprintf(buf + len, BUFSIZE - len, ""Thread 1 says hello!"\n");
+        len += snprintf(buf + len, BUFSIZE - len, "Thread 1 says hello!\n");
 
         // Second line + "Thread 2 says hello"
         len += snprintf(buf + len, BUFSIZE - len, "%s\n", second_line);
-        len += snprintf(buf + len, BUFSIZE - len, ""Thread 2 says hello!"\n");
+        len += snprintf(buf + len, BUFSIZE - len, "Thread 2 says hello!\n");
     }
 
     // Ensure buffer length doesn't exceed the provided size
