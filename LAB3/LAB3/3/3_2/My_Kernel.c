@@ -39,7 +39,7 @@ static ssize_t Myread(struct file *fileptr, char __user *ubuf, size_t buffer_len
     }
 
     // Read the content of the /proc/Mythread_info file to check how many lines there are
-    struct file *proc_file = filp_open(PROC_FILE_PATH, O_RDONLY, 0);
+    struct file *proc_file = filp_open(/proc/Mythread_info, O_RDONLY, 0);
     if (IS_ERR(proc_file)) {
         pr_err("Failed to open /proc/Mythread_info\n");
         return -EFAULT;
@@ -70,7 +70,7 @@ static ssize_t Myread(struct file *fileptr, char __user *ubuf, size_t buffer_len
     // If there's only one line in the file
     if (line_count == 1) {
         len += snprintf(buf + len, BUFSIZE - len, "%s\n", file_contents);
-        len += snprintf(buf + len, BUFSIZE - len, "%s\n", THREAD_1_MSG);
+        len += snprintf(buf + len, BUFSIZE - len, "Thread 1 says hello!\n");
     } 
     // If there are two lines in the file
     else if (line_count == 2) {
@@ -79,11 +79,11 @@ static ssize_t Myread(struct file *fileptr, char __user *ubuf, size_t buffer_len
 
         // First line + "Thread 1 says hello"
         len += snprintf(buf + len, BUFSIZE - len, "%s\n", first_line);
-        len += snprintf(buf + len, BUFSIZE - len, "%s\n", THREAD_1_MSG);
+        len += snprintf(buf + len, BUFSIZE - len, ""Thread 1 says hello!"\n");
 
         // Second line + "Thread 2 says hello"
         len += snprintf(buf + len, BUFSIZE - len, "%s\n", second_line);
-        len += snprintf(buf + len, BUFSIZE - len, "%s\n", THREAD_2_MSG);
+        len += snprintf(buf + len, BUFSIZE - len, ""Thread 2 says hello!"\n");
     }
 
     // Ensure buffer length doesn't exceed the provided size
