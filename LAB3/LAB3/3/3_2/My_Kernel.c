@@ -39,7 +39,7 @@ static ssize_t Myread(struct file *fileptr, char __user *ubuf, size_t buffer_len
     }
 
     // Read the content of the /proc/Mythread_info file to check how many lines there are
-    struct file *proc_file = filp_open(/proc/Mythread_info, O_RDONLY, 0);
+    struct file *proc_file = filp_open("/proc/Mythread_info", O_RDONLY, 0);
     if (IS_ERR(proc_file)) {
         pr_err("Failed to open /proc/Mythread_info\n");
         return -EFAULT;
