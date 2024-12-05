@@ -74,7 +74,6 @@ static ssize_t Myread(struct file *fileptr, char __user *ubuf, size_t buffer_len
         if(len >= BUFSIZE){ //緩衝區滿了，截斷資料並停止寫入
             pr_warn("Buffer overflow in Myread.\n");
             len = BUFSIZE;
-            break;
         }
     } 
     // If there are two lines in the file
@@ -92,7 +91,6 @@ static ssize_t Myread(struct file *fileptr, char __user *ubuf, size_t buffer_len
         if(len >= BUFSIZE){ //緩衝區滿了，截斷資料並停止寫入
             pr_warn("Buffer overflow in Myread.\n");
             len = BUFSIZE;
-            break;
         }
     }
 
