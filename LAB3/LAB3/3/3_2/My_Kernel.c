@@ -9,16 +9,17 @@
 #define procfs_name "Mythread_info"
 #define BUFSIZE  1024
 char buf[BUFSIZE]; //kernel buffer
+static unsigned long p_len = 0;
 
 static ssize_t Mywrite(struct file *fileptr, const char __user *ubuf, size_t buffer_len, loff_t *offset){
     /*Your code here*/
-    size_t len;
+    
 
     if(buffer_len > BUFSIZE){
         return -ENOSPC;
     }
-    if(buffer_len > BUFSIZE - 1) len = BUFSIZE - 1;
-    else len = buffer_len;
+    if(buffer_len > BUFSIZE - 1) p_len = BUFSIZE - 1;
+    else p_len = buffer_len;
 
     int ret = copy_from_user(buf, ubuf, buffer_len);
     if(ret != 0){
@@ -26,20 +27,20 @@ static ssize_t Mywrite(struct file *fileptr, const char __user *ubuf, size_t buf
         return -EFAULT;
     }
 
-    len += sprintf(buf + len, "PID: %d, TID: %d, time: %d\n", current -> tgid, current -> pid, current -> utime/100/1000)
-    buf[len] = '\0';
+    p_len += sprintf(buf + p_len, "PID: %d, TID: %d, time: %d\n", current -> tgid, current -> pid, current -> utime/100/1000)
+    buf[p_len] = '\0';
 
-    *offset += len;
+    *offset += p_len;
 
     pr_info("Kernel received: %s\n", buf);
 
-    return len;
+    return p_len;
     /****************/
 }
 
 
 static ssize_t Myread(struct file *fileptr, char __user *ubuf, size_t buffer_len, loff_t *offset) {
-    size_t len = 0; // Calculate buffer length
+    ssize_t len = p_len; // Calculate buffer length
     if (*offset > 0) { // If offset is non-zero, that means it's already read
         return 0;
     }
