@@ -12,7 +12,7 @@
 
 #define matrix_row_y 250
 #define matrix_col_y 1234
-pthread_spinlock_t lock;
+
 FILE *fptr1;
 FILE *fptr2;
 FILE *fptr3;
@@ -73,14 +73,13 @@ void *thread1(void *arg){
 
     /*YOUR CODE HERE*/
     /* Hint: Write data into proc file.*/
-    pthread_spin_lock(&lock);
     FILE *file = fopen("/proc/Mythread_info", "w"); //追加模式 -> a，若用w會變成覆蓋後寫入
     if(!file){
         perror("Failed to open /proc/Mythread_info");
         pthread_exit(NULL);
     }
 
-    fputs(data, file);
+    fprintf(file, "Hello World from 1\n");
     fclose(file);
     
     /****************/ 
@@ -89,8 +88,6 @@ void *thread1(void *arg){
     while (fgets(buffer, sizeof(buffer), fptr4) != NULL){
         printf("%s", buffer);
     }
-
-    pthread_spin_unlock(&lock);
 }
 
 
@@ -108,14 +105,13 @@ void *thread2(void *arg){
     
     /*YOUR CODE HERE*/
     /* Hint: Write data into proc file.*/
-    pthread_spin_lock(&lock);
     FILE *file = fopen("/proc/Mythread_info", "w");
     if(!file){
         perror("Failed to open /proc/Mythread_info");
         pthread_exit(NULL);
     }
 
-    fputs(data, file);
+    fprintf(file, "Hello World from 2\n");
     fclose(file);
     
     /****************/   
@@ -124,8 +120,6 @@ void *thread2(void *arg){
     while (fgets(buffer, sizeof(buffer), fptr5) != NULL){
         printf("%s", buffer);
     } 
-
-    pthread_spin_unlock(&lock);
 }
 #endif
 
