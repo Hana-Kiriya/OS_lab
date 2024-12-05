@@ -40,9 +40,10 @@ static ssize_t Myread(struct file *fileptr, char __user *ubuf, size_t buffer_len
 
     // Instead of reading /proc/Mythread_info again, you can just append messages directly
     len += snprintf(buf + len, BUFSIZE - len, "Thread 1 says hello!\n");
-
+    len += snprintf(buf + len, BUFSIZE - len, "PID: %d, TID: %d, time: %d\n", current -> tgid, current -> pid, current -> utime/100/1000);
 #if defined(THREAD_NUMBER) && THREAD_NUMBER == 2
     len += snprintf(buf + len, BUFSIZE - len, "Thread 2 says hello!\n");
+    len += snprintf(buf + len, BUFSIZE - len, "PID: %d, TID: %d, time: %d\n", current -> tgid, current -> pid, current -> utime/100/1000);
 #endif
 
     // Ensure buffer length doesn't exceed the provided size
