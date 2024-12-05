@@ -27,7 +27,7 @@ static ssize_t Mywrite(struct file *fileptr, const char __user *ubuf, size_t buf
         return -EFAULT;
     }
 
-    p_len += sprintf(buf + p_len, "PID: %d, TID: %d, time: %d\n", current -> tgid, current -> pid, current -> utime/100/1000)
+    p_len += sprintf(buf + p_len, "PID: %d, TID: %d, time: %lld\n", current -> tgid, current -> pid, current -> utime/100/1000);
     buf[p_len] = '\0';
 
     *offset += p_len;
