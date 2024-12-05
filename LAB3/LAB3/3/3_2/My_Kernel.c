@@ -12,22 +12,28 @@ char buf[BUFSIZE]; //kernel buffer
 
 static ssize_t Mywrite(struct file *fileptr, const char __user *ubuf, size_t buffer_len, loff_t *offset){
     /*Your code here*/
-    size_t w_len;
+    size_t len;
 
-    if(buffer_len > BUFSIZE - 1) w_len = BUFSIZE - 1;
-    else w_len = buffer_len;
+    if(buffer_len > BUFSIZE){
+        return -ENOSPC;
+    }
+    if(buffer_len > BUFSIZE - 1) len = BUFSIZE - 1;
+    else len = buffer_len;
 
-    int ret = copy_from_user(buf, ubuf, w_len);
+    int ret = copy_from_user(buf, ubuf, buffer_len);
     if(ret != 0){
         pr_err("Failed to copy data from user space.\n");
         return -EFAULT;
     }
 
-    buf[w_len] = '\0';
+    len += sprintf(buf + len, "PID: %d, TID: %d, time: %d\n", current -> tgid, current -> pid, current -> utime/100/1000)
+    buf[len] = '\0';
+
+    *offset += len;
 
     pr_info("Kernel received: %s\n", buf);
 
-    return w_len;
+    return len;
     /****************/
 }
 
@@ -37,14 +43,6 @@ static ssize_t Myread(struct file *fileptr, char __user *ubuf, size_t buffer_len
     if (*offset > 0) { // If offset is non-zero, that means it's already read
         return 0;
     }
-
-    // Instead of reading /proc/Mythread_info again, you can just append messages directly
-    len += snprintf(buf + len, BUFSIZE - len, "Thread 1 says hello!\n");
-    len += snprintf(buf + len, BUFSIZE - len, "PID: %d, TID: %d, time: %d\n", current -> tgid, current -> pid, current -> utime/100/1000);
-#if defined(THREAD_NUMBER) && THREAD_NUMBER == 2
-    len += snprintf(buf + len, BUFSIZE - len, "Thread 2 says hello!\n");
-    len += snprintf(buf + len, BUFSIZE - len, "PID: %d, TID: %d, time: %d\n", current -> tgid, current -> pid, current -> utime/100/1000);
-#endif
 
     // Ensure buffer length doesn't exceed the provided size
     if (len > buffer_len) {
