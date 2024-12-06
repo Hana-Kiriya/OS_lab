@@ -12,7 +12,7 @@ char buf[BUFSIZE]; //kernel buffer
 
 static ssize_t Mywrite(struct file *fileptr, const char __user *ubuf, size_t buffer_len, loff_t *offset){
     /*Your code here*/
-    ssize_t len;
+    ssize_t len = 0;
     if (*offset > 0) { // If offset is non-zero, that means it's already read
         return 0;
     }
@@ -68,7 +68,8 @@ static int My_Kernel_Init(void){
     return 0;
 }
 
-static void My_Kernel_Exit(void){
+static void My_Kernel_Exit(void){ 
+    remove_proc_entry(procfs_name, NULL);
     pr_info("My kernel says GOODBYE");
 }
 
