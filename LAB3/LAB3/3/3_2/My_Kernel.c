@@ -8,50 +8,64 @@
 
 #define procfs_name "Mythread_info"
 #define BUFSIZE  1024
-char buf[BUFSIZE];
+char buf[BUFSIZE]; //kernel buffer
 
 static ssize_t Mywrite(struct file *fileptr, const char __user *ubuf, size_t buffer_len, loff_t *offset){
-    /* Do nothing */
-	return 0;
-}
-
-
-static ssize_t Myread(struct file *fileptr, char __user *ubuf, size_t buffer_len, loff_t *offset){
-    //offset:偏移量，ubuf:用戶空間的緩衝區，buffer_len:緩衝區大小
     /*Your code here*/
-    struct task_struct *thread;
-    int len = 0; //計算緩衝區的偏移量
-
-    if(*offset > 0){ //偏移不為0，表已讀取過
+    ssize_t len = 0;
+    if (*offset > 0) { // //偏移不為0，表已讀取過
         return 0;
     }
 
-    for_each_thread(current, thread){ //歷遍所有執行緒
-        //主執行緒:current，但只需在子執行緒thread1、thread2印出字串即可        
-        if(thread != current) len += snprintf(buf + len, BUFSIZE - len, "PID: %d, TID: %d, Priority: %d, State: %d\n", current -> pid, thread -> pid, thread -> prio, thread -> __state);
-
-        if(len >= BUFSIZE){ //緩衝區滿了，截斷資料並停止寫入
-            pr_warn("Buffer overflow in Myread.\n");
-            len = BUFSIZE;
-            break;
-        }
+    if(buffer_len > BUFSIZE){ //檢查寫入的資料大小，若超過緩衝區大小則返回錯誤代碼
+        return -ENOSPC;
     }
 
-    if(len > buffer_len){ //確保不超過用戶空間大小
-        len = buffer_len;
-    }
+    //確定實際要寫入的大小
+    if(buffer_len > BUFSIZE - 1) len = BUFSIZE - 1; //預留一個給 '\0'
+    else len = buffer_len;
 
-    int ret = copy_to_user(ubuf, buf, len);
-    if(ret != 0){ //若複製成功則 = 0，if不成立，反之失敗則回傳未被成功複製的字節數量，ex:欲複製6個字節，僅4個字節成功複製，則copy_to_user返還2，因2 != 0，故if成立，執行if內指令
-        pr_err("Failed to copy data to user space.\n");
+    //從使用者空間複製到緩衝區buf
+    int ret = copy_from_user(buf, ubuf, buffer_len);
+    if(ret != 0){
+        pr_err("Failed to copy data from user space.\n");
         return -EFAULT;
     }
 
+    //在緩衝區尾部添加執行緒資料 
+    len += sprintf(buf + len, "PID: %d, TID: %d, time: %lld\n", current -> tgid, current -> pid, current -> utime/100/1000);
+    buf[len] = '\0';
+
+    //更新偏移量
     *offset += len;
+    
+    //返回實際寫入的字節數
+    pr_info("Kernel received: %s\n", buf);
 
     return len;
     /****************/
 }
+
+
+static ssize_t Myread(struct file *fileptr, char __user *ubuf, size_t buffer_len, loff_t *offset) {
+    if (*offset > 0) { //偏移不為0，表已讀取過
+        return 0;
+    }
+
+    //從緩衝區複製到使用者空間
+    int ret = copy_to_user(ubuf, buf, buffer_len);
+    if (ret != 0) {
+        pr_err("Failed to copy data to user space.\n");
+        return -EFAULT;
+    }
+
+    //更新偏移量
+    *offset += buffer_len;
+
+    //返回成功傳送的字節數
+    return buffer_len;
+}
+
 
 static struct proc_ops Myops = {
     .proc_read = Myread,
@@ -64,7 +78,7 @@ static int My_Kernel_Init(void){
     return 0;
 }
 
-static void My_Kernel_Exit(void){
+static void My_Kernel_Exit(void){ 
     remove_proc_entry(procfs_name, NULL); //避免kernel_panic
     pr_info("My kernel says GOODBYE");
 }
