@@ -66,4 +66,3 @@ int main() {
     fprintf(fptr, "%d ", a);
     fclose(fptr);
 }
-
