@@ -51,7 +51,7 @@ void data_processing(void){
 
 void *thread1(void *arg){
     char data[30];
-    sprintf(data, "%s", "Thread 1 says hello!");
+    sprintf(data, "%s", "Thread 1 says hello!"); //僅將字串存入data
 
 #if (THREAD_NUMBER == 1)
     for(int i=0; i<matrix_row_x; i++){
@@ -79,14 +79,15 @@ void *thread1(void *arg){
         pthread_exit(NULL);
     }
 
-    fprintf(file, "Thread 1 says hello!\n");
+    fprintf(file, "Thread 1 says hello!\n"); //將字串寫入/proc/Mythread_info中
     fclose(file);
     
     /****************/ 
 
     char buffer[50]; 
-    while (fgets(buffer, sizeof(buffer), fptr4) != NULL){
-        printf("%s", buffer);
+    //觸發Myread，從緩衝區把資料複製到使用者空間
+    while (fgets(buffer, sizeof(buffer), fptr4) != NULL){ //將讀取到的資料存入buffer
+        printf("%s", buffer); //印出buffer資料
     }
 }
 
@@ -117,8 +118,9 @@ void *thread2(void *arg){
     /****************/   
 
     char buffer[50]; 
-    while (fgets(buffer, sizeof(buffer), fptr5) != NULL){
-        printf("%s", buffer);
+    //觸發Myread，從緩衝區把資料複製到使用者空間
+    while (fgets(buffer, sizeof(buffer), fptr5) != NULL){ //將讀取到的資料存入buffer
+        printf("%s", buffer); //印出buffer資料
     } 
 }
 #endif
