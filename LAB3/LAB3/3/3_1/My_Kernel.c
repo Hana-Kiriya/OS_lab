@@ -27,7 +27,7 @@ static ssize_t Myread(struct file *fileptr, char __user *ubuf, size_t buffer_len
     }
 
     for_each_thread(current, thread){ //歷遍所有執行緒
-        len += snprintf(buf + len, BUFSIZE - len, "PID: %d, TID: %d, Priority: %d, State: %d\n", current -> pid, thread -> pid, thread -> prio, thread -> __state);
+        if(thread != current) len += snprintf(buf + len, BUFSIZE - len, "PID: %d, TID: %d, Priority: %d, State: %d\n", current -> pid, thread -> pid, thread -> prio, thread -> __state);
 
         if(len >= BUFSIZE){ //緩衝區滿了，截斷資料並停止寫入
             pr_warn("Buffer overflow in Myread.\n");
@@ -64,6 +64,7 @@ static int My_Kernel_Init(void){
 }
 
 static void My_Kernel_Exit(void){
+    remove_proc_entry(procfs_name, NULL);
     pr_info("My kernel says GOODBYE");
 }
 
