@@ -9,7 +9,7 @@ judge:
 	@rm -f 1.txt
 
 diff:
-	@gcc -o 1.out 1.c
+	@gcc -o 1.out 1_2.c
 	@i=1; while [ $$i -le 100 ]; do \
 		./1.out; \
 		i=$$((i + 1)); \
