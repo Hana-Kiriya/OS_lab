@@ -293,7 +293,7 @@ static int osfs_create(struct mnt_idmap *idmap, struct inode *dir, struct dentry
     osfs_inode->i_blocks = 0;
 
     // Step4: Parent directory entry update for the new file //新增目錄項
-    ret = osfs_add_dir_entry(dir, inode -> i_ino, dentry -> d_name.name, dentry -> d_name.len)
+    ret = osfs_add_dir_entry(dir, inode -> i_ino, dentry -> d_name.name, dentry -> d_name.len);
     if (ret) {
         pr_err("osfs_create: Failed to add directory entry\n");
         iput(inode);
